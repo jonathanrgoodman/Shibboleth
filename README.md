@@ -4,6 +4,8 @@ To analyse the outputs, or to run multiple iterations of the models, see the <a 
 
 Please note the Shibboleth functions can also be run in single iterations. In all three cases the first [[1]] output can be plotted using the Shibboleth line function. The third [[3]] output from Shibboleth 1 also gives the trait in fixation, the generation at fixation, and the run number in columns 1, 2, and 3, respectively; this is the second [[2]] output from Shibboleths 1 and 2.
 
-The .rds files included here are the averaged results from the models' runs; they can be uploaded to R. The file drift5000.rds holds the results from the stochastic drift (comparator) model. We created models from the models' outputs using the script that can be found <a href="https://htmlpreview.github.io/?https://github.com/jonathanrgoodman/Shibboleth/blob/main/Shibbboleth-Analysis.nb.html">here</a>.
+The .rds files included here are the averaged results from the models' runs; they can be uploaded to R. The file drift5000.rds holds the results from the stochastic drift (comparator) model. 
+
+We created statistical models from the models' outputs using the script that can be found <a href="https://htmlpreview.github.io/?https://github.com/jonathanrgoodman/Shibboleth/blob/main/Shibbboleth-Analysis.nb.html">here</a>. This is a playbook for analyzing results from the Shibboleth models.
 
 The <a href="https://github.com/jonathanrgoodman/Shibboleth/blob/main/Supplement.docx">Supplement.docx</a> file gives the models' description, which follows the standardized ODD protocol for agent-based models (ABMs; Grimm et al. 2006).
