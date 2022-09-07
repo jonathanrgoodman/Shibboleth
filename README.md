@@ -8,4 +8,4 @@ The .rds files included here are the averaged results from the models' runs; the
 
 We created statistical models from the models' outputs using the script that can be found <a href="https://htmlpreview.github.io/?https://github.com/jonathanrgoodman/Shibboleth/blob/main/Shibbboleth-Analysis.nb.html">here</a>. This is a playbook for analyzing results from the Shibboleth models.
 
-The <a href="https://github.com/jonathanrgoodman/Shibboleth/blob/main/Supplement.docx">Supplement.docx</a> file gives the models' description, which follows the standardized ODD protocol for agent-based models (ABMs; Grimm et al. 2006).
+The <a href="https://github.com/jonathanrgoodman/Shibboleth/blob/main/Supplement.docx">Supplement.docx</a> file gives the models' description, which follows the standardized ODD protocol for agent-based models (ABMs; Grimm et al. 2006), as well as the supplementary figures from the main text.
