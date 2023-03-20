@@ -6,6 +6,6 @@ Please note the Shibboleth functions can also be run in single iterations. In al
 
 The file drift5000.rds holds the results from the unbiased transmission (comparator) model. 
 
-We created statistical models from the models' outputs using the script that can be found <a href="https://htmlpreview.github.io/?https://github.com/jonathanrgoodman/Shibboleth/blob/main/Shibbboleth-Analysis.nb.html">here</a>. This is a playbook for analyzing results from the Shibboleth models. The full analysis from Model 1 can be found here.
+We created statistical models from the models' outputs using the script that can be found <a href="https://htmlpreview.github.io/?https://github.com/jonathanrgoodman/Shibboleth/blob/main/Shibbboleth-Analysis.nb.html">here</a>. This is a playbook for analyzing results from the Shibboleth models. The full analysis from Model 1 can be found <a href="https://htmlpreview.github.io/?https://github.com/jonathanrgoodman/Shibboleth/blob/main/Model1-analyses.nb.html">here</a>.
 
 The <a href="https://github.com/jonathanrgoodman/Shibboleth/blob/main/Supplement.docx">Supplement.docx</a> file gives the models' description, which follows the standardized ODD protocol for agent-based models (ABMs; Grimm et al. 2006), as well as the supplementary figures from the main text.
