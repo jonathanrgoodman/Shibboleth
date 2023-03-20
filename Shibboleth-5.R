@@ -1,0 +1,239 @@
+shibboleth.3 <- function(N=50, traits=10, generations=200, cost=10, B=.2){
+  
+  #determine and list which traits have been selected from blue-green spectrum using colorRamps package
+  
+  library(colorRamps)
+  
+  unique.traits <- blue2green(traits)
+  
+  unique.traits1 <- unique.traits[1:(length(unique.traits)/2)]
+  
+  unique.traits2 <- unique.traits[(length(unique.traits)/2+1):(length(unique.traits))]
+  
+  if(traits > 5){
+  
+  prob2 <- rep(NA, length(unique.traits2))
+  
+  prob2[c(1,2)] <- 50
+  
+  prob2[c(3:length(prob2))] <- 10
+  
+  }
+  
+  if(traits <= 5){
+    
+    prob2 <- rep(50, length(unique.traits2))
+    
+  }
+  
+  #determine boundaries of mimicry and tolerance values, and adjustment rate, using B
+  
+  adjustment <- round((traits-1)*B)
+  
+  mimicry.boundaries <- adjustment
+    
+  tolerance.boundaries <- adjustment
+  
+  #create first population of N individuals with matching sampled traits
+  
+  individual <- 1:N
+  
+  population1 <- data.frame(individual, trait=sample(unique.traits1, N, replace=TRUE), fitness=round(abs(rnorm(N,mean=50,sd=10))), mimicry=sample((0:mimicry.boundaries), N, replace=TRUE))
+  
+  population2 <- data.frame(individual, trait=sample(unique.traits2, N, prob=prob2, replace=TRUE), fitness=round(abs(rnorm(N,mean=50,sd=10))), tolerance=sample((0:tolerance.boundaries), N, replace=TRUE))
+  
+  #create dataframe for output with columns for traits, frequencies of traits, and corresponding generations
+  
+  output.pop1 <- data.frame(Var2=rep(unique.traits, generations), Freq=rep(NA, length(unique.traits)*generations), generation=rep(1:generations, each=length(unique.traits)))
+  
+  output.pop2 <- data.frame(Var2=rep(unique.traits, generations), Freq=rep(NA, length(unique.traits)*generations), generation=rep(1:generations, each=length(unique.traits)))
+  
+  #determine the trait frequencies from the first populations
+  
+  Freq.pop1 <- as.data.frame(t(table(factor(population1$trait, levels=unique.traits))))
+  
+  Freq.pop2 <- as.data.frame(t(table(factor(population2$trait, levels=unique.traits))))
+  
+  #slot first population trait frequencies into outputs
+  
+  output.pop1[1:length(unique.traits), 2] <- Freq.pop1[1:length(unique.traits), 3]
+  
+  output.pop2[1:length(unique.traits), 2] <- Freq.pop2[1:length(unique.traits), 3]
+  
+  #create data frame to record overall change in mean mimicry and tolerance
+  
+  population.m.t <- data.frame(mimicry=mean(population1$mimicry), tolerance=mean(population2$tolerance))
+  
+  #set fixation value to NA — determines whether to break loop during processing
+  
+  e <- NA
+  
+  #determine reproduction over generations
+  
+  for (generations in 2:generations) {
+    
+    #break loop if fixation is reached, copy all generations after fixation to 200
+    
+    if (is.na(e)==FALSE){
+      
+      output$Freq[which(is.na(output$Freq))] <- rep(output$Freq[output$generation==e], max(output$generation-e))
+      
+      break
+      
+    }
+    
+    #determine whether individual mimicry range falls inside tolerance range, and distribute fitness accordingly
+    
+    for (i in 1:nrow(population1)){
+      
+      #subset trait ranges by mimicry and tolerance scores
+      
+      #bluebeards
+      
+      for(i in 1:nrow(population1)){
+        
+        if (((which(population1$trait[i]==unique.traits)-population1$mimicry[i]) > 0) & (which(population1$trait[i]==unique.traits)-1) > 0)
+          
+        {
+          
+          individual.range <- c(unique.traits[(which(population1$trait[i]==unique.traits)+1):(which(population1$trait[i]==unique.traits)+population1$mimicry[i])], 
+                                unique.traits[(which(population1$trait[i]==unique.traits)-population1$mimicry[i]):(which(population1$trait[i]==unique.traits))])
+          
+        } else { 
+          
+          individual.range <- c(unique.traits[(which(population1$trait[i]==unique.traits)+1):(which(population1$trait[i]==unique.traits)+population1$mimicry[i])],
+                                unique.traits[1:(which(population1$trait[i]==unique.traits))])
+          
+        }
+        
+        individual.range <- individual.range[!is.na(individual.range)]
+        
+        mimicry.range <- c(population1$trait[i], sample((subset(individual.range,!population1$trait[i]==individual.range)), population1$mimicry[i], replace=FALSE))
+        
+      }
+      
+      #greenbeards
+      
+      for(i in 1:nrow(population2)){
+        
+        if (((which(population2$trait[i]==unique.traits)-population2$tolerance[i]) > 0) & (which(population2$trait[i]==unique.traits)-1) > 0)
+          
+        {
+          
+          individual.range <- c(unique.traits[(which(population2$trait[i]==unique.traits)+1):(which(population2$trait[i]==unique.traits)+population2$tolerance[i])], 
+                                unique.traits[(which(population2$trait[i]==unique.traits)-population2$tolerance[i]):(which(population2$trait[i]==unique.traits))])
+          
+        }
+        
+        else { 
+          
+          individual.range <- c(unique.traits[(which(population2$trait[i]==unique.traits)+1):(which(population2$trait[i]==unique.traits)+population2$tolerance[i])],
+                                unique.traits[1:(which(population2$trait[i]==unique.traits))])
+          
+        }
+        
+        individual.range <- individual.range[!is.na(individual.range)]
+        
+        tolerance.range <- c(population2$trait[i], sample((subset(individual.range,!population2$trait[i]==individual.range)), population2$tolerance[i], replace=FALSE))
+        
+      }
+      
+      #distribute costs based on tolerance and mimicry ranges; more tolerant greenbeards pay more
+      
+      if (TRUE %in% (mimicry.range %in% tolerance.range)){
+        
+        population1$fitness[i] <- population1$fitness[i] + (cost + (length(unique.traits)+population2$tolerance[i]))
+        
+        population1$fitness <- population1$fitness + round(cost/10)
+        
+        population2$fitness[i] <- population2$fitness[i] - (cost + (length(unique.traits)+population2$tolerance[i]))
+        
+        population2$fitness <- population2$fitness - round(cost/10)
+        
+        #random remaining greenbeard trait-holder pays cost to lower tolerance of tolerant individual who lets bluebeard in
+        
+        if (length(which(population2$trait %in% unique.traits2 & population2$tolerance %in% c(0,1)) > 0)){
+          
+          sample(which(population2$trait %in% unique.traits2 & population2$tolerance %in% c(0,1)), 1) -> punisher
+          
+          population2[punisher,]$fitness <- population2[punisher,]$fitness - 2*cost
+          
+          population2[i,]$fitness <- population2[i,]$fitness + 2*cost
+          
+          population2[i,]$tolerance <- 0
+          
+        }
+        
+      }
+      
+      else{
+        
+        population1$fitness[i] <- population1$fitness[i] - (cost + population1$mimicry[i])
+        
+        population1$fitness <- population1$fitness - round(cost/10)
+        
+        population2$fitness[i] <- population2$fitness[i] + (cost + population1$mimicry[i])
+        
+        population2$fitness <- population2$fitness + round(cost/5)
+        
+      }
+      
+    }
+    
+    #ensure no fitness values are below 0 or above 100
+    
+    population1$fitness[population1$fitness>100] <- 100
+    population1$fitness[population1$fitness<0] <- 0
+    
+    population2$fitness[population2$fitness>100] <- 100
+    population2$fitness[population2$fitness<0] <- 0
+    
+    #amalgamate populations and define potential mimicry, tolerance scores in case of reproduction to different population
+    
+    population.total <- rbind(data.frame(population1[1:(nrow(population1)),1:4]),data.frame(population2[1:(nrow(population2)),1:3],mimicry=sample(0:mimicry.boundaries, nrow(population2), replace=TRUE)))
+    
+    population.total$tolerance <- NA
+    
+    population.total$tolerance[1:nrow(population1)] <- sample(0:tolerance.boundaries, nrow(population1), replace=TRUE)
+    
+    population.total$tolerance[(nrow(population1)+1):nrow(population.total)] <- population2$tolerance
+    
+    #reproduce population1 based on fitness
+    
+    population1 <- cbind(individual, population.total[sample(1:nrow(population.total), N, replace=TRUE, prob=population.total$fitness), 2:4])
+    
+    Freq1.pop1 <- as.data.frame(t(table(factor(population1$trait, levels=unique.traits))))
+
+    output.pop1[match(NA, output.pop1[, 2]):(match(NA, output.pop1[, 2])+length(unique.traits)-1), 2] <- Freq1.pop1[1:length(unique.traits), 3]
+    
+    #reproduce population2 based on fitness
+    
+    population2 <- cbind(individual, population.total[sample(1:nrow(population.total), N, replace=TRUE, prob=population.total$fitness), c(2,3,5)])
+    
+    Freq1.pop2 <- as.data.frame(t(table(factor(population2$trait, levels=unique.traits))))
+    
+    output.pop2[match(NA, output.pop2[, 2]):(match(NA, output.pop2[, 2])+length(unique.traits)-1), 2] <- Freq1.pop2[1:length(unique.traits), 3]
+    
+    #output for overall population
+    
+    output <- data.frame(Var2=output.pop1$Var2,Freq=output.pop1$Freq+output.pop2$Freq,generation=rep(1:max(output.pop1$generation),each=length(unique(output.pop1$Var2))))
+  
+    #determine whether and when equilibrium is reached
+    
+    ifelse(any(output$Freq==(N*2)), e <- output$generation[output$Freq==(N*2)][1], e <- NA)
+    
+    ifelse(any(output$Freq==(N*2)), e.var <- output$Var2[output$Freq==(N*2)][1], e.var <- NA)
+    
+  }
+  
+  #record final population mimicry and tolerance means
+  
+  population.m.t[2,1] <- mean(population1$mimicry)
+  
+  population.m.t[2,2] <- mean(population2$tolerance)
+  
+  #list final outputs
+  
+  list(output, data.frame(e,e.var), population.m.t)
+  
+}
